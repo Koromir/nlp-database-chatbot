@@ -1,2 +1,4 @@
-.venv-chat_kd/
+.venv-chat_kd/*
 data/alerts.csv
+
+!.venv-chat_kd/.gitkeep
