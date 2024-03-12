@@ -9,21 +9,27 @@ import os
 import re
 
 def main():
+    print("Welcome to chatbot!")
+    # find path to the current file
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    # setup working directory
+    os.chdir(dname)
 
     # load and check openai_api_key
     #user_api_key = os.environ.get('OPENAI_API_KEY')
     user_api_key = input("Please provide OPENAI_API_KEY:")
-
-
-    print(f"OPENAI_API_KEY:\n{user_api_key}")
+    #print(f"Provided OPENAI_API_KEY:\n{user_api_key}")
+    print("    ...done")
 
     # load external csv file into row-based documents
-    csv_file_path = '/home/konrad/Documents/chatbot_x/data/alerts.csv'
+    print("Loading provided csv file...")
+    csv_file_path = 'data/alerts.csv'
     loader = CSVLoader(file_path=csv_file_path, encoding="utf-8")
     data = loader.load()
+    print("    ...done")
 
     # embedding of the information provided in the csv file
-    print("#################################################")
     print("Chatbot initilization...")
     embeddings = OpenAIEmbeddings(openai_api_key=user_api_key)
     print("    ...done")
@@ -34,13 +40,19 @@ def main():
     print("#################################################")
     print("")
 
+    # print welcome text
+    print("##################################################################################")
+    print("##################### >> WELCOME TO KD CUSTOMIZED CHATBOT << #####################")
+    print("##################################################################################")
+    print("")
+
     # define chain
     chain = ConversationalRetrievalChain.from_llm(
         llm = ChatOpenAI(temperature=0.0,
                          model_name='gpt-3.5-turbo',
                          openai_api_key=user_api_key),
-                         retriever=vectors.as_retriever(),
-                         return_source_documents=True
+        retriever=vectors.as_retriever(),
+        return_source_documents=True
                          )
     
     # send welcome message by chat
@@ -54,13 +66,13 @@ def main():
     
     # setup chat hearing in the infinite loop
     while True:
-        user_input = input("You: ")
+        user_input = input("> You: ")
         if (user_input.lower()=='exit' or user_input.lower()=='quit' or user_input.lower()=='bye'):
             print(f"> Bot:\n{ls1}-[ANSWER]:\n{ls1}Goodbye!")
             break
 
         # get result from chatbot
-        result = chain({"question": user_input, "chat_history": history})
+        result = chain.invoke({"question": user_input, "chat_history": history})
 
         # capture alrt id's
         alert_id = []
@@ -77,5 +89,6 @@ def main():
         # flush alert_id
         alert_id = None
 
+# run main function
 if __name__ == "__main__":
     main()
